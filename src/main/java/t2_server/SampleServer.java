@@ -2,7 +2,6 @@ package t2_server;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -15,8 +14,7 @@ class SampleServer extends Thread{
             int i = 0; // счётчик подключений
 
             // привинтить сокет на локалхост, порт 3128
-            ServerSocket server = new ServerSocket(3128, 0,
-                    InetAddress.getByName("localhost"));
+            ServerSocket server = new ServerSocket(3128, 0);//, InetAddress.getByName("localhost"));
 
             System.out.println("server is started");
 
@@ -64,15 +62,16 @@ class SampleServer extends Thread{
             System.out.println(data);
             
             data ="HTTP/1.1 200 OK "+
-				"Date: Mon, 07 Apr 2003 14:40:25 GMT "+
+            	"Date: Mon, 07 Apr 2003 14:40:25 GMT "+
 				"Server: Apache/1.3.20 (Win32) PHP/4.3.0 "+
 				"Keep-Alive: timeout=15, max=100 "+
 				"Connection: Keep-Alive "+
 				"Transfer-Encoding: chunked "+
 				"Content-Type: text/plane\n"+
 				"\n"+
-				"This a test!!!"+num+" "+200+"/n"+data;
-            // выводим данные:
+				"<!DOCTYPE html><html><head><meta charset='utf-8'></head><body>"+
+					"<h1>Ответ сервера</h1>"+
+					"запрос номер "+num+"\n";
             os.write(data.getBytes());
 
             // завершаем соединение
