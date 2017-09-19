@@ -1,6 +1,9 @@
 package t2_server;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -48,14 +51,18 @@ class SampleServer extends Thread{
             InputStream is = s.getInputStream();
             // и оттуда же - поток данных от сервера к клиенту
             OutputStream os = s.getOutputStream();
-
-            // буффер данных в 64 килобайта
-            byte buf[] = new byte[64*1024];
-            // читаем 64кб от клиента, результат - кол-во реально принятых данных
-            int r = is.read(buf);
-
+            int r = 0;
+            byte buf[] = new byte[32*1024];
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));     
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            while ((r = is.read(buf))!=-1){
+            	System.out.println("readed "+r+" bytes from client");
+            	bos.write(buf,0,r);
+            	System.out.println("writed "+r+" bytes into bos");
+            }
+            System.out.println("next step");
             // создаём строку, содержащую полученную от клиента информацию
-            String data = new String(buf, 0, r);
+            String data = new String(bos.toByteArray());
 
             // добавляем данные об адресе сокета:
             data = ""+num+": "+"\n"+data;
@@ -76,6 +83,8 @@ class SampleServer extends Thread{
 
             // завершаем соединение
             s.close();
+            os.close();
+            bos.close();
         }catch(Exception e){
         	System.out.println("init error: "+e);
         } // вывод исключений
