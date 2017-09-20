@@ -1,18 +1,15 @@
 package mainserver;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-
 import http.HTTPClientHeader;
+import http.HTTPReader;
 import serverconfig.ServerConfig;
 
 /**
@@ -21,7 +18,6 @@ import serverconfig.ServerConfig;
  */
 public class IVMITServer extends Thread{
     Socket s;
-    int hs=0;
 
     public static void main(String args[]){
         try{
@@ -48,12 +44,21 @@ public class IVMITServer extends Thread{
     }
     
     public void run(){
-    	try(InputStream is = s.getInputStream(); OutputStream os = s.getOutputStream();){
+    	System.out.println("socket info: "+new Date());
+    	System.out.println("address: "+s.getInetAddress().getHostAddress());
+    	System.out.println("port: "+s.getLocalPort());
+    	System.out.println("local address: "+s.getLocalAddress().getHostAddress());
+    	System.out.println("local port: "+s.getLocalPort());
+    	System.out.println("remote address: "+s.getRemoteSocketAddress().toString());
+    	try(InputStream is = s.getInputStream(); 
+    			OutputStream os = s.getOutputStream();){
  
-    		List<String> lhs = readHTTPHeader(is);
+    		List<String> lhs = HTTPReader.readHTTPHeader(is);
+    		
     		HTTPClientHeader httpClientHeader = HTTPClientHeader.parseHTTPHeader(lhs);
+
     		if (httpClientHeader.contentLength>0){
-    			readHTTPBody(is,httpClientHeader.contentLength,hs);
+    			HTTPReader.readHTTPBody(is,httpClientHeader.contentLength);
     		}
     		
             String data ="HTTP/1.1 200 OK "+
@@ -70,44 +75,12 @@ public class IVMITServer extends Thread{
 
                 // завершаем соединение
                 s.close();
-
+                // Подсчитать и вывести время сеанса
+            	System.out.println("socket close: "+new Date());
     	} catch (IOException e) {
 			e.printStackTrace();
 		} catch (Throwable e) {
 			e.printStackTrace();
-		}
-    
-    }
-    
-    private List<String> readHTTPHeader(InputStream is) throws Throwable {
-    	List<String> result = new ArrayList<String>();
-        BufferedReader br = new BufferedReader(new InputStreamReader(is));
-        while(true) {
-            String s = br.readLine();
-            hs +=s.length();
-            if(s == null || s.trim().length() == 0) {
-                break;
-            }
-            result.add(s);
-        }
-        return result;
-    }
-    
-    private void readHTTPBody(InputStream is, int bodySize, int offset) throws Throwable {
-        int r = 0;
-        int count=0;
-        byte buf[] = new byte[32*1024];
-        System.out.println("read body "+bodySize);
-        try(ByteArrayOutputStream bos = new ByteArrayOutputStream();){
-	        while (count<bodySize){
-	        	r = is.read(buf,count+hs,bodySize-count);
-	        	System.out.println("readed "+r+" bytes from client");
-	        	bos.write(buf,count,r); 
-	        	count +=r;
-	        	System.out.println("writed "+r+" bytes into bos");
-	        }
-	        System.out.println(new String(bos.toByteArray()));
-        }
-
-    }
+		}   
+    }    
 }

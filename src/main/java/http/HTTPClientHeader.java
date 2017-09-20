@@ -7,12 +7,13 @@ import java.util.List;
  *
  */
 public class HTTPClientHeader {
-	public static String method;
-	public static String resourcePath;
-	public static String protocol;
-	public static String version;
-	public static String host;	
-	public static int contentLength = 0;
+	public String method;
+	public String resourcePath;
+	public String protocol;
+	public String version;
+	public String host;	
+	public int contentLength = 0;
+	public int headerLength = 0;
 	
 	private String[] headerKeys={"Host","Content-Type","Content-Length",
 			"Accept-Language","Accept-Encoding","Origin"};
