@@ -7,6 +7,8 @@ public class ServerConfig {
 	public static String htmlPath = "html";
 	public static String errorPagePath = "errorhtml";
 	public static String error404Page = "error404Page.html";
+	public static String error501Page = "error501Page.html";
+	public static String defaultErrorPage = "errorPage.html";
 	public static String defaultPage = "index.html";
 	
 	public static ServerConfig readConfig(){

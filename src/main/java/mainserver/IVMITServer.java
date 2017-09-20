@@ -1,13 +1,18 @@
 package mainserver;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.List;
+import errors.EnumUtils;
+import errors.HTTPResponseCode;
 import http.HTTPClientHeader;
 import http.HTTPReader;
 import serverconfig.ServerConfig;
@@ -61,21 +66,64 @@ public class IVMITServer extends Thread{
     			HTTPReader.readHTTPBody(is,httpClientHeader.contentLength);
     		}
     		
-            String data ="HTTP/1.1 200 OK "+
-                	"Date: Mon, 07 Apr 2003 14:40:25 GMT "+
-    				"Server: Apache/1.3.20 (Win32) PHP/4.3.0 "+
-    				"Keep-Alive: timeout=15, max=100 "+
-    				"Connection: Keep-Alive "+
-    				"Transfer-Encoding: chunked "+
-    				"Content-Type: text/plane\n"+
-    				"\n"+
-    				"<!DOCTYPE html><html><head><meta charset='utf-8'></head><body>"+
-    					"<h1>Ответ сервера</h1>";
+    		//Response:
+    		// По умолчанию возвращаем статус OK
+    		HTTPResponseCode rCode = HTTPResponseCode.OK;
+    		// По умолчанию возвращаем сообщение об ошибке
+    		String contents = "<!DOCTYPE html><html><head><meta charset='utf-8'></head><body>"+
+					"<h1>Server error</h1>";
+    		// Смотрим что запросил клиент
+    		// Если запрашивается корневая папка
+    		if (httpClientHeader.resourcePath.equals("/")){
+    			// Ищем файл из параметра конфигурации ServerConfig.defaultPage
+    			String fileName = ServerConfig.htmlPath + File.separator + ServerConfig.defaultPage;
+    			try{
+    				contents = new String(Files.readAllBytes(Paths.get(fileName))); 
+    			} catch (IOException e){
+        			System.out.println("проблемы с "+fileName);
+    				rCode = HTTPResponseCode.NotFound;
+    			}
+    		} else {
+    			// пытаемся найти запрашиваемый файл
+    			String fileName = ServerConfig.htmlPath + File.separator + httpClientHeader.resourcePath.replace("/", "");
+    			try{
+    				contents = new String(Files.readAllBytes(Paths.get(fileName))); 
+    			} catch (IOException e){
+    				// не смогли найти запрашиваемый файл
+        			System.out.println("проблемы с "+fileName);
+    				rCode = HTTPResponseCode.NotFound;
+        			try{
+        				fileName = ServerConfig.htmlPath + File.separator + ServerConfig.defaultErrorPage;
+        				contents = new String(Files.readAllBytes(Paths.get(fileName)));
+            			contents=contents.replace("#{errorCode}", EnumUtils.enumCode(rCode));
+            			contents=contents.replace("#{errorDescription}", EnumUtils.enumDescription(rCode));
+        			}catch (IOException e1){
+        				System.out.println(e1.getMessage());
+        			}
+    			}
+    		}
+    		
+    		// что уйдет клиенту окончательно
+            String data ="HTTP/1.1 "+EnumUtils.enumCode(rCode)+" "+
+            		EnumUtils.enumDescription(rCode)+"\r\n"+
+            		// general-header
+    				"Connection: Close"+"\r\n"+
+                	"Date: "+new Date()+"\r\n"+
+    				// response-header
+    				"Server: ICMIT/0.0.1"+"\r\n"+
+    				// entity-header
+    				"Content-Length: "+ (contents.getBytes()).length+"\r\n" +
+    				// пустая строка отделяет заголовок от контента
+    				"\r\n" + 
+    				// сам контент
+    				contents;
+    				
                 os.write(data.getBytes());
 
                 // завершаем соединение
                 s.close();
                 // Подсчитать и вывести время сеанса
+                System.out.println(data);
             	System.out.println("socket close: "+new Date());
     	} catch (IOException e) {
 			e.printStackTrace();
