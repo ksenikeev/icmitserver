@@ -91,7 +91,7 @@ public class HTTPReader {
 		        	r = is.read();
 		        	if (r==-1){
 		        		// Если поток прерван, то сбрасываем буфер
-		        		bos.write(buf, count, n);
+		        		bos.write(buf, 0, n);
 		        		System.out.println(new String(bos.toByteArray()));
 		        		return;
 		        	} else {
@@ -104,6 +104,8 @@ public class HTTPReader {
 	        		n = 0;
 	        	}
 	        }
+	        // Если осталось что-то не сброшенным из буфера
+    		if (n>0) bos.write(buf,0,n);
 	        System.out.println(new String(bos.toByteArray()));
         }
     }
