@@ -8,6 +8,7 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.util.Date;
 import java.util.List;
@@ -49,24 +50,27 @@ public class IVMITServer extends Thread{
     }
     
     public void run(){
-    	System.out.println("socket info: "+new Date());
+    	// Техническая информация из сокета
+/*    	System.out.println("socket info: "+new Date());
     	System.out.println("address: "+s.getInetAddress().getHostAddress());
     	System.out.println("port: "+s.getLocalPort());
     	System.out.println("local address: "+s.getLocalAddress().getHostAddress());
     	System.out.println("local port: "+s.getLocalPort());
     	System.out.println("remote address: "+s.getRemoteSocketAddress().toString());
+*/    	
+    	// Подключаемся к потокам ввода-вывода ассоциированных с сокетом
     	try(InputStream is = s.getInputStream(); 
     			OutputStream os = s.getOutputStream();){
- 
+    		// Считываем заголовок запроса от клиента в список строк
     		List<String> lhs = HTTPReader.readHTTPHeader(is);
-    		
+    		// Разбираем заголовок
     		HTTPClientHeader httpClientHeader = HTTPClientHeader.parseHTTPHeader(lhs);
-
+    		// Если в запросе есть еще что-то пытаемся прочитать
     		if (httpClientHeader.contentLength>0){
     			HTTPReader.readHTTPBody(is,httpClientHeader.contentLength);
     		}
     		
-    		//Response:
+    		// Ответ:
     		// По умолчанию возвращаем статус OK
     		HTTPResponseCode rCode = HTTPResponseCode.OK;
     		// По умолчанию возвращаем сообщение об ошибке
@@ -75,12 +79,14 @@ public class IVMITServer extends Thread{
     		// Смотрим что запросил клиент
     		// Если запрашивается корневая папка
     		if (httpClientHeader.resourcePath.equals("/")){
-    			// Ищем файл из параметра конфигурации ServerConfig.defaultPage
+    			// Ищем файл из параметра конфигурации ServerConfig.defaultPage = index.html
     			String fileName = ServerConfig.htmlPath + File.separator + ServerConfig.defaultPage;
+    			// Пытаемся прочитать этот файл, чтобы вернуть его клиенту
     			try{
     				contents = new String(Files.readAllBytes(Paths.get(fileName))); 
-    			} catch (IOException e){
-        			System.out.println("проблемы с "+fileName);
+    			} catch (NoSuchFileException e){
+    				// Если не смогли найти
+    				System.out.println(e.getMessage() +" not found");
     				rCode = HTTPResponseCode.NotFound;
     			}
     		} else {
@@ -88,22 +94,24 @@ public class IVMITServer extends Thread{
     			String fileName = ServerConfig.htmlPath + File.separator + httpClientHeader.resourcePath.replace("/", "");
     			try{
     				contents = new String(Files.readAllBytes(Paths.get(fileName))); 
-    			} catch (IOException e){
-    				// не смогли найти запрашиваемый файл
-        			System.out.println("проблемы с "+fileName);
+    			} catch (NoSuchFileException e){
+    				System.out.println(e.getMessage() +" not found");
+    				// не смогли найти запрашиваемый файл или еще какие-то ошибки ввода-вывода
+    				// попытаемся вывести страницу с кодом и описанием ошибки
     				rCode = HTTPResponseCode.NotFound;
         			try{
-        				fileName = ServerConfig.htmlPath + File.separator + ServerConfig.defaultErrorPage;
+        				fileName = ServerConfig.errorPagePath + File.separator + ServerConfig.defaultErrorPage;
         				contents = new String(Files.readAllBytes(Paths.get(fileName)));
             			contents=contents.replace("#{errorCode}", EnumUtils.enumCode(rCode));
             			contents=contents.replace("#{errorDescription}", EnumUtils.enumDescription(rCode));
-        			}catch (IOException e1){
-        				System.out.println(e1.getMessage());
+        			}catch (NoSuchFileException e1){
+        				System.out.println(e1.getMessage() +" not found");
         			}
     			}
     		}
     		
     		// что уйдет клиенту окончательно
+    		// заголовок:
             String data ="HTTP/1.1 "+EnumUtils.enumCode(rCode)+" "+
             		EnumUtils.enumDescription(rCode)+"\r\n"+
             		// general-header
@@ -115,15 +123,14 @@ public class IVMITServer extends Thread{
     				"Content-Length: "+ (contents.getBytes()).length+"\r\n" +
     				// пустая строка отделяет заголовок от контента
     				"\r\n" + 
-    				// сам контент
+    				// сам контент:
     				contents;
     				
                 os.write(data.getBytes());
 
                 // завершаем соединение
                 s.close();
-                // Подсчитать и вывести время сеанса
-                System.out.println(data);
+                // TODO Подсчитать и вывести время сеанса
             	System.out.println("socket close: "+new Date());
     	} catch (IOException e) {
 			e.printStackTrace();

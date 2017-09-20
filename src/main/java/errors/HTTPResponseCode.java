@@ -1,5 +1,6 @@
 package errors;
 
+//TODO дополнить список кодами возврата и описаниями
 public enum HTTPResponseCode {
 	// 1xx: Информационные коды - запрос получен, продолжается обработка	
 	@Description("")
