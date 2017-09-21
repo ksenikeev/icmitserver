@@ -33,7 +33,7 @@ public class HTTPClientHeader {
 		method = st[0];
 		resourcePath = st[1];
 		protocol = st[2];
-		System.out.println("method:"+method+" resourcePath:"+resourcePath+" protocol:"+protocol);
+		//System.out.println("method:"+method+" resourcePath:"+resourcePath+" protocol:"+protocol);
 	}
 	
 	//TODO исправить метод так, чтобы считывал параметр из известных по массиву headerKeys
@@ -43,7 +43,7 @@ public class HTTPClientHeader {
 		if (st[0].trim().equals("Content-Length")){
 			try{
 				contentLength = Integer.parseInt(st[1].trim());
-				System.out.println("Content-Length: "+contentLength);
+				//System.out.println("Content-Length: "+contentLength);
 			} catch (NumberFormatException e) {
 				e.printStackTrace();
 			}

@@ -35,6 +35,7 @@ public class HTTPReader {
     			// Читаем очередной байт
 	    		r = is.read();
 	    		if (r==-1){
+	    			System.out.println("поток прервался");
 	    			// поток прервался
 	    			return res;
 				} else if (r == '\r'){
@@ -71,13 +72,25 @@ public class HTTPReader {
     	List<String> result = new ArrayList<String>();
         while(true) {
             String s = readHeadersNextString(is);
-            System.out.println(s);
             if(s == null || s.trim().length() == 0) {
                 break;
             }
             result.add(s);
         }
         return result;
+    }
+    
+    /** Вывести список строк в консоль */
+    public static void printHTTPHeader(List<String> ls){
+    	if (ls!=null && ls.size()>0){
+    		StringBuilder data= new StringBuilder();
+    		for (String s: ls){
+    			data.append(s);data.append("\n");
+    		}
+    		System.out.println(data);
+    	} else {
+    		System.out.println("Header is empty! ThreadId: " + Thread.currentThread().getId());
+    	}
     }
     
     public static void readHTTPBody(InputStream is, int bodySize) throws Throwable {

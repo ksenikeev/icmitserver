@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.Files;
@@ -22,47 +21,47 @@ import serverconfig.ServerConfig;
  * 
  *
  */
-public class IVMITServer extends Thread{
+public class ICMITServer extends Thread{
     Socket s;
 
     public static void main(String args[]){
         try{
-            ServerSocket server = new ServerSocket(ServerConfig.mainPort, 0, 
-            		InetAddress.getByName(ServerConfig.mainHost));
+            ServerSocket server = new ServerSocket(ServerConfig.mainPort);
+            		//, 0, InetAddress.getByName(ServerConfig.mainHost));
             System.out.println("server is started");
             // слушаем порт
-            while(true)
-            {
-                // ждём нового подключения, после чего запускаем обработку клиента
-                // в новый вычислительный поток и увеличиваем счётчик на единичку
-                new IVMITServer(server.accept());
+            while(true) { // ждём нового подключения, после чего запускаем обработку клиента
+                new ICMITServer(server.accept());
              }
         } catch(Exception e){
         	System.out.println("init error: "+e);
         }
     }
 
-    public IVMITServer(Socket s){
+    public ICMITServer(Socket s){
         this.s = s;
         setDaemon(true);
         setPriority(NORM_PRIORITY);
         start();
     }
     
-    public void run(){
+    public  void run(){
     	// Техническая информация из сокета
-/*    	System.out.println("socket info: "+new Date());
-    	System.out.println("address: "+s.getInetAddress().getHostAddress());
-    	System.out.println("port: "+s.getLocalPort());
-    	System.out.println("local address: "+s.getLocalAddress().getHostAddress());
-    	System.out.println("local port: "+s.getLocalPort());
-    	System.out.println("remote address: "+s.getRemoteSocketAddress().toString());
-*/    	
+			System.out.println("NEW connection. ThreadId: " + currentThread().getId() + 
+					"\nsocket info: "+new Date()+"\n"+
+			"address: "+s.getInetAddress().getHostAddress()+"\n"+
+			"port: "+s.getLocalPort()+"\n"+
+			"local address: "+s.getLocalAddress().getHostAddress()+"\n"+
+			"local port: "+s.getLocalPort()+"\n"+
+			"remote address: "+s.getRemoteSocketAddress().toString()+"\n");
+   	//TODO по сети могут приходить разные пакеты, рассмотреть вопрос об отбрасывании технических
+    	
     	// Подключаемся к потокам ввода-вывода ассоциированных с сокетом
     	try(InputStream is = s.getInputStream(); 
     			OutputStream os = s.getOutputStream();){
     		// Считываем заголовок запроса от клиента в список строк
     		List<String> lhs = HTTPReader.readHTTPHeader(is);
+    		HTTPReader.printHTTPHeader(lhs);
     		// Разбираем заголовок
     		HTTPClientHeader httpClientHeader = HTTPClientHeader.parseHTTPHeader(lhs);
     		// Если в запросе есть еще что-то пытаемся прочитать
@@ -115,7 +114,7 @@ public class IVMITServer extends Thread{
             String data ="HTTP/1.1 "+EnumUtils.enumCode(rCode)+" "+
             		EnumUtils.enumDescription(rCode)+"\r\n"+
             		// general-header
-    				"Connection: Close"+"\r\n"+
+    				"Connection: close"+"\r\n"+
                 	"Date: "+new Date()+"\r\n"+
     				// response-header
     				"Server: ICMIT/0.0.1"+"\r\n"+
