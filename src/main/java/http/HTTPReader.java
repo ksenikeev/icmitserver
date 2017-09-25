@@ -35,7 +35,7 @@ public class HTTPReader {
     			// Читаем очередной байт
 	    		r = is.read();
 	    		if (r==-1){
-	    			System.out.println("поток прервался");
+	    			System.out.println("поток прервался"+" ThreadId: " + Thread.currentThread().getId());
 	    			// поток прервался
 	    			return res;
 				} else if (r == '\r'){
@@ -83,6 +83,7 @@ public class HTTPReader {
     /** Вывести список строк в консоль */
     public static void printHTTPHeader(List<String> ls){
     	if (ls!=null && ls.size()>0){
+			System.out.println(" ThreadId: " + Thread.currentThread().getId());
     		StringBuilder data= new StringBuilder();
     		for (String s: ls){
     			data.append(s);data.append("\n");

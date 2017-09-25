@@ -130,7 +130,7 @@ public class ICMITServer extends Thread{
                 // завершаем соединение
                 s.close();
                 // TODO Подсчитать и вывести время сеанса
-            	System.out.println("socket close: "+new Date());
+            	System.out.println("socket close: "+new Date() +" ThreadId: " + currentThread().getId());
     	} catch (IOException e) {
 			e.printStackTrace();
 		} catch (Throwable e) {
