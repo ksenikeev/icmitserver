@@ -9,17 +9,17 @@ import java.net.Socket;
 public class TestServer {
 
 	public static void main(String[] args) {
-		try(ServerSocket server = new ServerSocket(3128, 0);){
+		try(ServerSocket server = new ServerSocket(3128)){
 			System.out.println("TestServer is started!");
 			Socket s = server.accept();
 
 			try(InputStream is = s.getInputStream();
-					OutputStream os = s.getOutputStream();){
+				OutputStream os = s.getOutputStream()){
 				byte buf[] = new byte[64*1024];
 				int r = is.read(buf);
 				String line = new String(buf,0,r);
 				System.out.println("data from client: "+line);
-				String response = "ok";
+				String response = "Данные получены сервером";
 				os.write(response.getBytes());
 			}
 			
@@ -27,5 +27,4 @@ public class TestServer {
 			e.printStackTrace();
 		}
 	}
-
 }

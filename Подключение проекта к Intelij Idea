@@ -1,0 +1,10 @@
+Подключение проекта к Intelij Idea
+
+1. Создать папку
+2. Создать локальный репозиторий в программе Source Tree
+3. В настройках репозитория добавить внешний https://github.com/ksenikeev/icmitserver
+4. Обновить список веток внешнего репозитория, выбрать master, и получить изменения
+5. Запускаем Idea,  выбираем Import project
+6. Выбираем папку с локальным репозиторием
+7. Выбираем Import project from external model - maven
+8. Отмечаем Import Maven project automatically

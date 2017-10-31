@@ -24,20 +24,6 @@ import serverconfig.ServerConfig;
 public class ICMITServer extends Thread{
     Socket s;
 
-    public static void main(String args[]){
-        try{
-            ServerSocket server = new ServerSocket(ServerConfig.mainPort);
-            		//, 0, InetAddress.getByName(ServerConfig.mainHost));
-            System.out.println("server is started");
-            // слушаем порт
-            while(true) { // ждём нового подключения, после чего запускаем обработку клиента
-                new ICMITServer(server.accept());
-             }
-        } catch(Exception e){
-        	System.out.println("init error: "+e);
-        }
-    }
-
     public ICMITServer(Socket s){
         this.s = s;
         setDaemon(true);
@@ -90,7 +76,7 @@ public class ICMITServer extends Thread{
     			}
     		} else {
     			// пытаемся найти запрашиваемый файл
-    			String fileName = ServerConfig.htmlPath + File.separator + httpClientHeader.resourcePath.replace("/", "");
+    			String fileName = ServerConfig.htmlPath + File.separator + httpClientHeader.resourcePath;
     			try{
     				contents = new String(Files.readAllBytes(Paths.get(fileName))); 
     			} catch (NoSuchFileException e){
