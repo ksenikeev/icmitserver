@@ -1,4 +1,4 @@
-package errors;
+package icmit.errors;
 
 import java.lang.reflect.Field;
 

@@ -1,4 +1,4 @@
-package errors;
+package icmit.errors;
 
 //TODO дополнить список кодами возврата и описаниями
 public enum HTTPResponseCode {

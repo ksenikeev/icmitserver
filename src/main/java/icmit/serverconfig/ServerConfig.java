@@ -1,4 +1,4 @@
-package serverconfig;
+package icmit.serverconfig;
 
 public class ServerConfig {
 	public static int mainPort = 3128;

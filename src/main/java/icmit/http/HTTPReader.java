@@ -1,14 +1,14 @@
-package http;
+package icmit.http;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import serverconfig.Consts;
+import icmit.serverconfig.Consts;
 
 /**
- * Класс предназначен для чтения http пакета
+ * Класс предназначен для чтения icmit.http пакета
  * @author ksenikeev
  * TODO Сейчас класс имеет только статические методы. Было бы правильнее использовать его через создание экземпляра, передав в конструктор поток
  * 

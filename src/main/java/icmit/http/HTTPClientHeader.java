@@ -1,4 +1,4 @@
-package http;
+package icmit.http;
 
 import java.util.List;
 

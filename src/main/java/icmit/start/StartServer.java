@@ -1,7 +1,7 @@
-package start;
+package icmit.start;
 
-import mainserver.ICMITServer;
-import serverconfig.ServerConfig;
+import icmit.mainserver.ICMITServer;
+import icmit.serverconfig.ServerConfig;
 
 import java.net.ServerSocket;
 
